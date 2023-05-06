@@ -1,0 +1,26 @@
+#include <stdio.h>
+#include <string.h>
+#include <ctype.h>
+int main() {
+    char plaintext[1000], ciphertext[26];
+    int i, j;
+    printf("Enter plaintext: ");
+    fgets(plaintext, 1000, stdin);
+    printf("Enter ciphertext alphabet mapping (26 letters): ");
+    fgets(ciphertext, 26+1, stdin);
+    ciphertext[strcspn(ciphertext, "\n")] = '\0';
+    for (i = 0; plaintext[i] != '\0'; ++i) {
+        if (isalpha(plaintext[i])) {
+            if (isupper(plaintext[i])) {
+                j = plaintext[i] - 'A';
+                plaintext[i] = toupper(ciphertext[j]);
+            } else {
+                j = plaintext[i] - 'a';
+                plaintext[i] = tolower(ciphertext[j]);
+            }
+        }
+    }
+    printf("Encrypted message: %s", plaintext);
+    
+    return 0;
+}
