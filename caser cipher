@@ -1,0 +1,26 @@
+#include <stdio.h>
+#include <ctype.h>
+int main() {
+    char message[1000];
+    int key, i, j;
+    printf("Enter a message to encrypt: ");
+    fgets(message, 1000, stdin);
+    printf("Enter key (1-25): ");
+    scanf("%d", &key);
+    for (i = 0; message[i] != '\0'; ++i) {
+        if (isalpha(message[i])) {
+            if (isupper(message[i])) {
+                j = message[i] - 'A';
+                j = (j + key) % 26;
+                message[i] = j + 'A';
+            } else {
+                j = message[i] - 'a';
+                j = (j + key) % 26;
+                message[i] = j + 'a';
+            }
+        }
+    }
+    printf("Encrypted message: %s", message);
+    
+    return 0;
+}
