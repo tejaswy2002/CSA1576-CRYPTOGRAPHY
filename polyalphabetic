@@ -1,0 +1,38 @@
+#include <stdio.h>
+#include <string.h>
+#define ALPHABET_SIZE 26
+void encrypt(char plaintext[], char key[], char ciphertext[]) {
+    int i, j;
+    char shiftedAlphabet[ALPHABET_SIZE];
+    int keyIndex = 0;
+    for (i = 0; i < strlen(key); i++) {
+        for (j = 0; j < ALPHABET_SIZE; j++) {
+            shiftedAlphabet[j] = 'A' + (j + key[i] - 'A') % ALPHABET_SIZE;
+        }
+        for (j = 0; j < strlen(plaintext); j++) {
+            if (plaintext[j] >= 'A' && plaintext[j] <= 'Z') {
+                ciphertext[j] = shiftedAlphabet[plaintext[j] - 'A'];
+                keyIndex = (keyIndex + 1) % strlen(key);
+            }
+            else {
+                ciphertext[j] = plaintext[j];
+            }
+        }
+    }
+
+
+    ciphertext[strlen(plaintext)] = '\0';
+}
+int main() {
+    char plaintext[100], key[100], ciphertext[100];
+    printf("Enter plaintext: ");
+    fgets(plaintext, sizeof(plaintext), stdin);
+    printf("Enter key: ");
+    fgets(key, sizeof(key), stdin);
+    plaintext[strcspn(plaintext, "\n")] = '\0';
+    key[strcspn(key, "\n")] = '\0';
+    encrypt(plaintext, key, ciphertext);
+    printf("Ciphertext: %s\n", ciphertext);
+
+    return 0;
+}
