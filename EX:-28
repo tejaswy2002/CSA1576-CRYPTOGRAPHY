@@ -1,0 +1,51 @@
+#include <stdio.h>
+#include <stdint.h>
+#include <math.h>
+
+// Function to perform modular exponentiation
+uint64_t modExp(uint64_t base, uint64_t exponent, uint64_t modulus) {
+    uint64_t result = 1;
+    base = base % modulus;
+
+    while (exponent > 0) {
+        if (exponent & 1) {
+            result = (result * base) % modulus;
+        }
+
+        exponent = exponent >> 1;
+        base = (base * base) % modulus;
+    }
+
+    return result;
+}
+
+// Function to perform the Diffie-Hellman key exchange
+void diffieHellman(uint64_t p, uint64_t g, uint64_t xA, uint64_t xB) {
+    // Alice sends A = g^xA mod p to Bob
+    uint64_t A = modExp(g, xA, p);
+
+    // Bob sends B = g^xB mod p to Alice
+    uint64_t B = modExp(g, xB, p);
+
+    // Both Alice and Bob compute the shared secret key
+    uint64_t secretKeyA = modExp(B, xA, p);
+    uint64_t secretKeyB = modExp(A, xB, p);
+
+    // Verify that both shared secret keys are equal
+    if (secretKeyA == secretKeyB) {
+        printf("Shared Secret Key: %llu\n", secretKeyA);
+    } else {
+        printf("Key agreement failed.\n");
+    }
+}
+
+int main() {
+    uint64_t p = 23;  // Prime number
+    uint64_t g = 5;   // Generator
+    uint64_t xA = 4;  // Alice's secret key
+    uint64_t xB = 3;  // Bob's secret key
+
+    diffieHellman(p, g, xA, xB);
+
+    return 0;
+}
