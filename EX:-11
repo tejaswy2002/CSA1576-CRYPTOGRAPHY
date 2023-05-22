@@ -1,0 +1,28 @@
+#include <stdio.h>
+
+unsigned long long calculatePossibleKeys() {
+    unsigned long long totalKeys = 1;
+    int i;
+
+    for (i = 25; i >= 1; i--) {
+        totalKeys *= i;
+    }
+
+    unsigned long long powerOf2 = 1;
+    int exponent = 0;
+
+    while (powerOf2 <= totalKeys) {
+        powerOf2 *= 2;
+        exponent++;
+    }
+
+    return exponent - 1;
+}
+
+int main() {
+    unsigned long long possibleKeys = calculatePossibleKeys();
+
+    printf("Approximate number of possible keys for the Playfair cipher: 2^%llu\n", possibleKeys);
+
+    return 0;
+}
