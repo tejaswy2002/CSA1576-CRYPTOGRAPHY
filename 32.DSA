@@ -1,0 +1,64 @@
+#include <stdio.h>
+#include 	<opensl/dsa.h>	
+#include <openssl/rsa.h>
+#include <openssl/sha.h>
+
+void generateDSAKey(DSA **dsa) {
+    *dsa = DSA_generate_parameters(1024, NULL, 0, NULL, NULL, NULL, NULL);
+    DSA_generate_key(*dsa);
+}
+
+void generateRSAKey(RSA **rsa) {
+    BIGNUM *e = BN_new();
+    BN_set_word(e, RSA_F4);
+    *rsa = RSA_new();
+    RSA_generate_key_ex(*rsa, 1024, e, NULL);
+    BN_free(e);
+}
+
+void dsaSign(const char *message, DSA *dsa) {
+    unsigned char digest[SHA_DIGEST_LENGTH];
+    SHA1((unsigned char *)message, strlen(message), digest);
+
+    DSA_SIG *sig = DSA_do_sign(digest, SHA_DIGEST_LENGTH, dsa);
+    printf("DSA Signature: %s\n", BN_bn2hex(sig->r));
+
+    DSA_SIG_free(sig);
+}
+
+void rsaSign(const char *message, RSA *rsa) {
+    unsigned char digest[SHA_DIGEST_LENGTH];
+    SHA1((unsigned char *)message, strlen(message), digest);
+
+    unsigned char signature[RSA_size(rsa)];
+    unsigned int sigLen;
+    RSA_sign(NID_sha1, digest, SHA_DIGEST_LENGTH, signature, &sigLen, rsa);
+    printf("RSA Signature: ");
+    for (unsigned int i = 0; i < sigLen; i++) {
+        printf("%02x", signature[i]);
+    }
+    printf("\n");
+}
+
+int main() {
+    const char *message = "Hello, world!";
+
+    DSA *dsa;
+    generateDSAKey(&dsa);
+    printf("Message: %s\n", message);
+    dsaSign(message, dsa);
+    dsaSign(message, dsa);
+
+    printf("\n");
+
+    RSA *rsa;
+    generateRSAKey(&rsa);
+    printf("Message: %s\n", message);
+    rsaSign(message, rsa);
+    rsaSign(message, rsa);
+
+    DSA_free(dsa);
+    RSA_free(rsa);
+
+    return 0;
+}
