@@ -1,0 +1,100 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#define SIZE 5
+#define ALPHABET_SIZE 26
+void generatePlayfairMatrix(char matrix[SIZE][SIZE], const char* key) {
+    int i, j;
+    int isPresent[ALPHABET_SIZE] = {0};  
+
+    int len = strlen(key);
+    for (i = 0; i < len; i++) {
+        char c = key[i];
+        if (c == 'J')
+            c = 'I';  
+        if (!isPresent[c - 'A']) {
+            matrix[i / SIZE][i % SIZE] = c;
+            isPresent[c - 'A'] = 1;
+        }
+    }
+
+    char ch = 'A';
+    for (; i < SIZE * SIZE; i++) {
+        if (ch == 'J')
+            ch++;  
+        if (!isPresent[ch - 'A']) {
+            matrix[i / SIZE][i % SIZE] = ch;
+            isPresent[ch - 'A'] = 1;
+        }
+        ch++;
+    }
+}
+
+void findPosition(char matrix[SIZE][SIZE], char ch, int* row, int* col) {
+    int i, j;
+    for (i = 0; i < SIZE; i++) {
+        for (j = 0; j < SIZE; j++) {
+            if (matrix[i][j] == ch) {
+                *row = i;
+                *col = j;
+                return;
+            }
+        }
+    }
+}
+void encryptMessage(const char* message, char matrix[SIZE][SIZE], char* encrypted) {
+    int len = strlen(message);
+    int i;
+    for (i = 0; i < len; i += 2) {
+        char ch1 = message[i];
+        char ch2 = message[i + 1];
+
+        
+        if (ch1 == 'J')
+            ch1 = 'I';
+        if (ch2 == 'J')
+            ch2 = 'I';
+
+        int row1, col1, row2, col2;
+        findPosition(matrix, ch1, &row1, &col1);
+        findPosition(matrix, ch2, &row2, &col2);
+
+        if (row1 == row2) {
+            encrypted[i] = matrix[row1][(col1 + 1) % SIZE];
+            encrypted[i + 1] = matrix[row2][(col2 + 1) % SIZE];
+        }
+        
+        else if (col1 == col2) {
+            encrypted[i] = matrix[(row1 + 1) % SIZE][col1];
+            encrypted[i + 1] = matrix[(row2 + 1) % SIZE][col2];
+        }
+        else {
+            encrypted[i] = matrix[row1][col2];
+            encrypted[i + 1] = matrix[row2][col1];
+        }
+    }
+    encrypted[i] = '\0';  
+}
+
+int main() {
+    char matrix[SIZE][SIZE];
+    char key[] = "MFHIKUNOPQZVWXYELARGBD";  
+    char message[] = "MUSTSEEYOUOVERCADOGANWESTCOMINGATONCE";
+    char encrypted[2 * sizeof(message)];  
+
+    generatePlayfairMatrix(matrix, key);
+    encryptMessage(message, matrix, encrypted);
+
+    printf("Playfair Matrix:\n");
+    for (int i = 0; i < SIZE; i++) {
+        for (int j = 0; j < SIZE; j++) {
+            printf("%c ", matrix[i][j]);
+        }
+        printf("\n");
+    }
+
+    printf("\nOriginal Message: %s\n", message);
+    printf("Encrypted Message: %s\n", encrypted);
+
+    return 0;
+}
