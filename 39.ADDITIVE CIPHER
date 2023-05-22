@@ -1,0 +1,96 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+
+#define ALPHABET_SIZE 26
+
+typedef struct {
+    char letter;
+    int frequency;
+} LetterFrequency;
+
+// Function to count the frequency of letters in a given string
+void countLetterFrequency(const char *text, LetterFrequency *frequency) {
+    int i;
+    int len = strlen(text);
+
+    for (i = 0; i < len; i++) {
+        char ch = tolower(text[i]);
+        if (isalpha(ch)) {
+            frequency[ch - 'a'].frequency++;
+        }
+    }
+}
+
+// Function to compare two LetterFrequency structures for sorting in descending order of frequency
+int compareFrequency(const void *a, const void *b) {
+    const LetterFrequency *freqA = (const LetterFrequency *)a;
+    const LetterFrequency *freqB = (const LetterFrequency *)b;
+
+    if (freqA->frequency < freqB->frequency)
+        return 1;
+    else if (freqA->frequency > freqB->frequency)
+        return -1;
+    else
+        return 0;
+}
+
+// Function to decrypt the ciphertext using a given key
+void decryptCiphertext(const char *ciphertext, const int *key, char *plaintext) {
+    int i;
+    int len = strlen(ciphertext);
+
+    for (i = 0; i < len; i++) {
+        char ch = ciphertext[i];
+        if (isalpha(ch)) {
+            char base = isupper(ch) ? 'A' : 'a';
+            plaintext[i] = (ch - base - key[ch - base] + ALPHABET_SIZE) % ALPHABET_SIZE + base;
+        } else {
+            plaintext[i] = ch;
+        }
+    }
+    plaintext[len] = '\0';
+}
+
+// Function to perform a letter frequency attack and print the top N possible plaintexts
+void performLetterFrequencyAttack(const char *ciphertext, int n) {
+    int i, j;
+    LetterFrequency frequency[ALPHABET_SIZE] = {0};
+    char plaintext[strlen(ciphertext) + 1];
+    int key[ALPHABET_SIZE];
+
+    countLetterFrequency(ciphertext, frequency);
+
+    // Sort the letter frequencies in descending order
+    qsort(frequency, ALPHABET_SIZE, sizeof(LetterFrequency), compareFrequency);
+
+    // Generate possible keys by assuming the most frequent letter in the ciphertext corresponds to 'E' in English
+    for (i = 0; i < ALPHABET_SIZE; i++) {
+        int index = frequency[i].letter - 'a';
+        key[index] = (index + ALPHABET_SIZE - ('e' - 'a')) % ALPHABET_SIZE;
+    }
+
+    // Print the top N possible plaintexts
+    for (i = 0; i < n; i++) {
+        decryptCiphertext(ciphertext, key, plaintext);
+        printf("Plaintext #%d: %s\n", i + 1, plaintext);
+
+        // Increment the key for the next iteration
+        for (j = 0; j < ALPHABET_SIZE; j++) {
+            key[j] = (key[j] + 1) % ALPHABET_SIZE;
+        }
+    }
+}
+
+int main() {
+    char ciphertext[] = "Khoor, zruog!";
+    int n = 10;  // Number of top possible plaintexts to display
+
+    printf("Ciphertext: %s\n", ciphertext);
+    printf("Performing letter frequency attack...\n");
+
+    performLetterFrequencyAttack(ciphertext, n);
+
+    return 0;
+}
