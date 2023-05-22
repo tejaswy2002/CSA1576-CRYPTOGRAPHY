@@ -1,0 +1,113 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdint.h>
+
+#define BLOCK_SIZE 8
+
+// Function to perform encryption using ECB mode
+void encryptECB(uint8_t *plaintext, uint8_t *key, uint8_t *ciphertext, int numBlocks) {
+    // Perform encryption on each block using the key
+    for (int i = 0; i < numBlocks; i++) {
+        for (int j = 0; j < BLOCK_SIZE; j++) {
+            ciphertext[i * BLOCK_SIZE + j] = plaintext[i * BLOCK_SIZE + j] ^ key[j];
+        }
+    }
+}
+
+// Function to perform encryption using CBC mode
+void encryptCBC(uint8_t *plaintext, uint8_t *key, uint8_t *ciphertext, int numBlocks) {
+    uint8_t iv[BLOCK_SIZE] = { 0 }; // Initialization Vector
+
+    // Perform encryption on each block using the key and the previous ciphertext block
+    for (int i = 0; i < numBlocks; i++) {
+        for (int j = 0; j < BLOCK_SIZE; j++) {
+            ciphertext[i * BLOCK_SIZE + j] = plaintext[i * BLOCK_SIZE + j] ^ iv[j] ^ key[j];
+        }
+        // Update the Initialization Vector for the next block
+        for (int j = 0; j < BLOCK_SIZE; j++) {
+            iv[j] = ciphertext[i * BLOCK_SIZE + j];
+        }
+    }
+}
+
+// Function to perform decryption using ECB mode
+
+void decryptECB(uint8_t *ciphertext, uint8_t *key, uint8_t *plaintext, int numBlocks) {
+    // Perform decryption on each block using the key
+    for (int i = 0; i < numBlocks; i++) {
+        for (int j = 0; j < BLOCK_SIZE; j++) {
+            plaintext[i * BLOCK_SIZE + j] = ciphertext[i * BLOCK_SIZE + j] ^ key[j];
+        }
+    }
+}
+
+// Function to perform decryption using CBC mode
+void decryptCBC(uint8_t *ciphertext, uint8_t *key, uint8_t *plaintext, int numBlocks) {
+    uint8_t iv[BLOCK_SIZE] = { 0 }; // Initialization Vector
+
+    // Perform decryption on each block using the key and the previous ciphertext block
+    for (int i = 0; i < numBlocks; i++) {
+        for (int j = 0; j < BLOCK_SIZE; j++) {
+            plaintext[i * BLOCK_SIZE + j] = ciphertext[i * BLOCK_SIZE + j] ^ iv[j] ^ key[j];
+        }
+        // Update the Initialization Vector for the next block
+        for (int j = 0; j < BLOCK_SIZE; j++) {
+            iv[j] = ciphertext[i * BLOCK_SIZE + j];
+        }
+    }
+}
+
+int main() {
+    uint8_t plaintext[] = { 0x48, 0x65, 0x6C, 0x6C, 0x6F, 0x20, 0x57, 0x6F, 0x72, 0x6C, 0x64, 0x21 };
+    uint8_t key[] = { 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF, 0x11, 0x22 };
+    uint8_t ciphertextECB[sizeof(plaintext)];
+    uint8_t ciphertextCBC[sizeof(plaintext)];
+    uint8_t decryptedECB[sizeof(plaintext)];
+    uint8_t decryptedCBC[sizeof(plaintext)];
+
+    int numBlocks = sizeof(plaintext) / BLOCK_SIZE;
+
+    printf("Plaintext: ");
+    for (int i = 0; i < sizeof(plaintext); i++) {
+        printf("%02X ", plaintext[i]);
+    }
+    printf("\n");
+
+    // Encrypt using ECB mode
+    encryptECB(plaintext, key, ciphertextECB, numBlocks);
+
+    printf("Ciphertext (ECB): ");
+    for (int i = 0; i < sizeof(ciphertextECB); i++) {
+        printf("%02X ", ciphertextECB[i]);
+    }
+    printf("\n");
+
+    // Decrypt using ECB mode
+    decryptECB(ciphertextECB, key, decryptedECB, numBlocks);
+
+    printf("Decrypted (ECB): ");
+    for (int i = 0; i < sizeof(decryptedECB); i++) {
+        printf("%02X ", decryptedECB[i]);
+    }
+    printf("\n\n");
+
+    // Encrypt using CBC mode
+    encryptCBC(plaintext, key, ciphertextCBC, numBlocks);
+
+    printf("Ciphertext (CBC): ");
+    for (int i = 0; i < sizeof(ciphertextCBC); i++) {
+        printf("%02X ", ciphertextCBC[i]);
+    }
+    printf("\n");
+
+    // Decrypt using CBC mode
+    decryptCBC(ciphertextCBC, key, decryptedCBC, numBlocks);
+
+    printf("Decrypted (CBC): ");
+    for (int i = 0; i < sizeof(decryptedCBC); i++) {
+        printf("%02X ", decryptedCBC[i]);
+    }
+    printf("\n");
+
+    return 0;
+}
