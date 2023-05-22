@@ -1,0 +1,53 @@
+#include <stdio.h>
+#include <stdint.h>
+#include <string.h>
+
+#define BLOCK_SIZE 128
+#define CAPACITY_SIZE 64
+#define RATE_SIZE (BLOCK_SIZE - CAPACITY_SIZE)
+
+typedef struct {
+    uint64_t state[5][5];
+} SHA3State;
+
+// Function to initialize the internal state matrix
+void initState(SHA3State *state) {
+    memset(state, 0, sizeof(SHA3State));
+}
+
+// Function to check if all the lanes in the capacity portion of the state matrix have a nonzero bit
+int allNonzeroLanes(SHA3State *state) {
+    for (int i = 0; i < 5; i++) {
+        for (int j = 0; j < CAPACITY_SIZE / 8; j++) {
+            if (state->state[i][j] != 0)
+                return 0;
+        }
+    }
+    return 1;
+}
+
+// Function to update the internal state matrix
+void updateState(SHA3State *state) {
+    // Simulated update function - All lanes in the capacity portion set to 1
+    for (int i = 0; i < 5; i++) {
+        for (int j = 0; j < CAPACITY_SIZE / 8; j++) {
+            state->state[i][j] = 0xFFFFFFFFFFFFFFFF;
+        }
+    }
+}
+
+int main() {
+    SHA3State state;
+    int iterations = 0;
+
+    initState(&state);
+
+    while (!allNonzeroLanes(&state)) {
+        updateState(&state);
+        iterations++;
+    }
+
+    printf("Number of iterations: %d\n", iterations);
+
+    return 0;
+}
