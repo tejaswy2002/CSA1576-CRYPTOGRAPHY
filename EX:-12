@@ -1,0 +1,70 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+// Function to encrypt the message using the Hill cipher
+void encryptMessage(const int key[2][2], const char *message) {
+    int len = strlen(message);
+
+    // Check if the message length is divisible by 2
+    if (len % 2 != 0) {
+        printf("Message length should be even.\n");
+        return;
+    }
+
+    // Calculate the number of pairs in the message
+    int pairs = len / 2;
+
+    // Allocate memory for the pair of characters
+    char **messagePairs = (char **)malloc(pairs * sizeof(char *));
+    for (int i = 0; i < pairs; i++) {
+        messagePairs[i] = (char *)malloc(2 * sizeof(char));
+    }
+
+    // Populate the message pairs
+    int index = 0;
+    for (int i = 0; i < pairs; i++) {
+        for (int j = 0; j < 2; j++) {
+            messagePairs[i][j] = message[index];
+            index++;
+        }
+    }
+
+    // Encrypt each pair of characters
+    for (int i = 0; i < pairs; i++) {
+        int char1 = messagePairs[i][0] - 'a';
+        int char2 = messagePairs[i][1] - 'a';
+
+        // Perform matrix multiplication
+        int encryptedChar1 = (key[0][0] * char1 + key[0][1] * char2) % 26;
+        int encryptedChar2 = (key[1][0] * char1 + key[1][1] * char2) % 26;
+
+        // Convert back to ASCII characters
+        messagePairs[i][0] = encryptedChar1 + 'a';
+        messagePairs[i][1] = encryptedChar2 + 'a';
+    }
+
+    // Print the encrypted message
+    printf("Encrypted Message: ");
+    for (int i = 0; i < pairs; i++) {
+        printf("%c%c", messagePairs[i][0], messagePairs[i][1]);
+    }
+    printf("\n");
+
+    // Deallocate memory
+    for (int i = 0; i < pairs; i++) {
+        free(messagePairs[i]);
+    }
+    free(messagePairs);
+}
+
+int main() {
+    int key[2][2] = { {9, 4}, {5, 7} };
+    const char *message = "meet me at the usual place at ten rather than eight oclock";
+
+    printf("Original Message: %s\n", message);
+
+    encryptMessage(key, message);
+
+    return 0;
+}
