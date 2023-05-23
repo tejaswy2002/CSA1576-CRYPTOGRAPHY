@@ -1,0 +1,60 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+// Function to perform a letter frequency attack on an additive cipher
+void letterFrequencyAttack(const char *ciphertext, int topPlaintexts) {
+    int freq[26] = { 0 }; // Array to store the frequency of each letter
+
+    int len = strlen(ciphertext);
+
+    // Count the frequency of each letter in the ciphertext
+    for (int i = 0; i < len; i++) {
+        if (ciphertext[i] >= 'a' && ciphertext[i] <= 'z') {
+            freq[ciphertext[i] - 'a']++;
+        }
+    }
+
+    // Create a copy of the ciphertext
+    char *plaintext = (char *)malloc((len + 1) * sizeof(char));
+    strcpy(plaintext, ciphertext);
+
+    // Perform the frequency attack
+    for (int shift = 0; shift < 26; shift++) {
+        printf("Shift %d: ", shift);
+
+        // Decrypt the ciphertext using the current shift
+        for (int i = 0; i < len; i++) {
+            if (plaintext[i] >= 'a' && plaintext[i] <= 'z') {
+                plaintext[i] = 'a' + ((plaintext[i] - 'a' - shift + 26) % 26);
+            }
+        }
+
+        // Calculate the frequency score for the current plaintext
+        int score = 0;
+        for (int i = 0; i < len; i++) {
+            if (plaintext[i] >= 'a' && plaintext[i] <= 'z') {
+                score += freq[plaintext[i] - 'a'];
+            }
+        }
+
+        // Print the current plaintext
+        printf("%s (Score: %d)\n", plaintext, score);
+
+        strcpy(plaintext, ciphertext);
+    }
+
+    free(plaintext);
+}
+
+int main() {
+    const char *ciphertext = "xli hizivc hw avxizri jsvqteki xli nyvep xlii jsvqteki";
+    int topPlaintexts = 10;
+
+    printf("Ciphertext: %s\n", ciphertext);
+    printf("Performing letter frequency attack...\n");
+
+    letterFrequencyAttack(ciphertext, topPlaintexts);
+
+    return 0;
+}
