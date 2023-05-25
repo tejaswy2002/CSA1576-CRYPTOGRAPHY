@@ -1,0 +1,95 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define ALPHABET_SIZE 26
+#define MAX_PLAINTEXTS 10
+
+// Function to calculate the frequency of English letters in a given text
+void calculateLetterFrequency(const char *text, int *frequency) {
+    int i;
+    memset(frequency, 0, sizeof(int) * ALPHABET_SIZE);
+
+    for (i = 0; text[i] != '\0'; i++) {
+        char ch = text[i];
+        if (ch >= 'a' && ch <= 'z') {
+            frequency[ch - 'a']++;
+        } else if (ch >= 'A' && ch <= 'Z') {
+            frequency[ch - 'A']++;
+        }
+    }
+}
+
+// Function to perform the letter frequency attack and generate possible plaintexts
+void letterFrequencyAttack(const char *ciphertext, int numPlaintexts) {
+    int ciphertextFrequency[ALPHABET_SIZE];
+    int plaintextFrequency[ALPHABET_SIZE];
+    char possiblePlaintext[MAX_PLAINTEXTS][100];  // Adjust the plaintext length as per your needs
+    int i, j, k;
+
+    calculateLetterFrequency(ciphertext, ciphertextFrequency);
+
+    // Generate all possible plaintexts
+    for (i = 0; i < ALPHABET_SIZE; i++) {
+        char key = 'a' + i;
+
+        for (j = 0; ciphertext[j] != '\0'; j++) {
+            char ch = ciphertext[j];
+            char plaintextChar;
+
+            if (ch >= 'a' && ch <= 'z') {
+                plaintextChar = ((ch - 'a' - (key - 'a') + ALPHABET_SIZE) % ALPHABET_SIZE) + 'a';
+            } else if (ch >= 'A' && ch <= 'Z') {
+                plaintextChar = ((ch - 'A' - (key - 'a') + ALPHABET_SIZE) % ALPHABET_SIZE) + 'A';
+            } else {
+                plaintextChar = ch;
+            }
+
+            possiblePlaintext[i][j] = plaintextChar;
+        }
+        possiblePlaintext[i][j] = '\0';
+
+        calculateLetterFrequency(possiblePlaintext[i], plaintextFrequency);
+
+        // Rank the plaintexts based on letter frequency similarity
+        int score = 0;
+        for (k = 0; k < ALPHABET_SIZE; k++) {
+            score += abs(ciphertextFrequency[k] - plaintextFrequency[k]);
+        }
+
+        // Insert the plaintext in the correct position based on score (in descending order)
+        for (j = numPlaintexts - 1; j >= 0; j--) {
+            if (score < plaintextFrequency[j]) {
+                break;
+            }
+            if (j + 1 < numPlaintexts) {
+                strcpy(possiblePlaintext[j + 1], possiblePlaintext[j]);
+            }
+        }
+        if (j + 1 < numPlaintexts) {
+            strcpy(possiblePlaintext[j + 1], possiblePlaintext[i]);
+        }
+    }
+
+    // Print the top plaintexts
+    printf("Possible Plaintexts:\n");
+    for (i = 0; i < numPlaintexts; i++) {
+        printf("%d. %s\n", i + 1, possiblePlaintext[i]);
+    }
+}
+
+int main() {
+    char ciphertext[1000];  // Adjust the ciphertext length as per your needs
+    int numPlaintexts;
+
+    printf("Enter the ciphertext: ");
+    fgets(ciphertext, sizeof(ciphertext), stdin);
+    ciphertext[strcspn(ciphertext, "\n")] = '\0';
+
+    printf("Enter the number of possible plaintexts to generate: ");
+    scanf("%d", &numPlaintexts);
+
+    letterFrequencyAttack(ciphertext, numPlaintexts);
+
+    return 0;
+}
