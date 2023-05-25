@@ -1,0 +1,38 @@
+#include <stdio.h>
+#include <stdint.h>
+
+// Function to rotate the bits of a 28-bit value by a specified number of positions
+uint32_t leftRotate(uint32_t value, int positions) {
+    return ((value << positions) | (value >> (28 - positions))) & 0xFFFFFFF;
+}
+
+// Function to generate the subkeys
+void generateSubkeys(uint64_t initialKey, uint64_t* subkeys) {
+    uint32_t leftKey = (initialKey >> 28) & 0xFFFFFFF;  // First 28 bits of the initial key (left half)
+    uint32_t rightKey = initialKey & 0xFFFFFFF;         // Last 28 bits of the initial key (right half)
+
+    // Generate 16 subkeys
+    for (int i = 0; i < 16; i++) {
+        // Perform left rotations on both halves of the key
+        leftKey = leftRotate(leftKey, 1);
+        rightKey = leftRotate(rightKey, 1);
+
+        // Combine the two halves and store the subkey
+        subkeys[i] = ((uint64_t)leftKey << 28) | rightKey;
+    }
+}
+
+int main() {
+    uint64_t initialKey = 0x0123456789ABCDEF; // Example initial key (64 bits)
+    uint64_t subkeys[16];                     // Array to store the 16 subkeys
+
+    generateSubkeys(initialKey, subkeys);
+
+    // Display the generated subkeys
+    printf("Subkeys:\n");
+    for (int i = 0; i < 16; i++) {
+        printf("Subkey %2d: %012llx\n", i + 1, subkeys[i]);
+    }
+
+    return 0;
+}
