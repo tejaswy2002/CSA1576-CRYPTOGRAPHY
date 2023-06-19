@@ -1,0 +1,66 @@
+#include <stdio.h>
+
+/* S-DES Key */
+unsigned char key[9] = "0111111101";
+
+/* Counter */
+unsigned char counter[9] = "00000000";
+
+/* S-DES S-Box */
+unsigned char s_box[2][8] = {
+    {5, 2, 1, 6, 3, 4, 7, 0},
+    {1, 4, 6, 2, 0, 7, 5, 3}
+};
+
+/* S-DES P-Box */
+unsigned char p_box[8] = {1, 5, 2, 0, 3, 7, 4, 6};
+
+/* Perform S-DES Encryption */
+unsigned char s_des_encrypt(unsigned char plaintext) {
+    /* Generate the key for the current counter value */
+    unsigned char key1[9], key2[9];
+    unsigned char i;
+
+    for (i = 0; i < 8; i++) {
+        key1[i] = (key[i] - '0') ^ (counter[i] - '0') + '0';
+        key2[i] = key1[i];
+    }
+
+    /* Initial Permutation */
+    unsigned char ip[8];
+    for (i = 0; i < 8; i++)
+        ip[i] = plaintext >> (7 - i) & 0x01;
+
+    /* Round 1 */
+    unsigned char l1[4], r1[4];
+    for (i = 0; i < 4; i++)
+        l1[i] = ip[i];
+    for (i = 4; i < 8; i++)
+        r1[i - 4] = ip[i];
+
+    /* Expand and Permute */
+    unsigned char er1[8];
+    er1[0] = r1[3];
+    er1[1] = r1[0];
+    er1[2] = r1[1];
+    er1[3] = r1[2];
+    er1[4] = r1[1];
+    er1[5] = r1[2];
+    er1[6] = r1[3];
+    er1[7] = r1[0];
+
+    /* XOR with Key1 */
+    unsigned char xor1[8];
+    for (i = 0; i < 8; i++)
+        xor1[i] = er1[i] ^ (key1[i] - '0') + '0';
+
+    /* S-Box Substitution */
+    unsigned char sbox1[4];
+    sbox1[0] = s_box[0][(xor1[0] - '0') * 2 + (xor1[3] - '0')];
+    sbox1[1] = s_box[1][(xor1[1] - '0') * 2 + (xor1[2] - '0')];
+    sbox1[2] = s_box[0][(xor1[4] - '0') * 2 + (xor1[7] - '0')];
+    sbox1[3] = s_box[1][(xor1[5] - '0') * 2 + (xor1[6] - '0')];
+
+    /* Permutation */
+    unsigned char p1[4];
+    for (i = 0; i < 4
